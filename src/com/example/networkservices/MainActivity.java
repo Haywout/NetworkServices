@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 
 import model.example.networkservices.TweetModel;
 
@@ -15,7 +14,6 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.content.res.AssetManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
@@ -23,15 +21,16 @@ import android.widget.ListView;
 public class MainActivity extends Activity {
 	private String jsonInput;
 	private TweetModel model;
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		// haal het model op
-		TweetApplication app = (TweetApplication)getBaseContext().getApplicationContext();
+		TweetApplication app = (TweetApplication) getBaseContext()
+				.getApplicationContext();
 		model = app.getModel();
-		
+
 		// lees het json bestand uit
 		try {
 			jsonInput = readAssetIntoString("searchresult.json");
@@ -42,7 +41,7 @@ public class MainActivity extends Activity {
 		try {
 			JSONObject zoekresultaat = new JSONObject(jsonInput);
 			JSONArray tweetsJson = zoekresultaat.getJSONArray("statuses");
-			
+
 			// doorloopt de array om zo alle tweets eruit te halen
 			for (int i = 0; i < tweetsJson.length(); i++) {
 				model.addTweet(new Tweet(tweetsJson.getJSONObject(i)));
