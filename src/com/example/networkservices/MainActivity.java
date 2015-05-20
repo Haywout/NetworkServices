@@ -53,6 +53,7 @@ public class MainActivity extends Activity {
 
 		ListView listView = (ListView) findViewById(R.id.lvTweet);
 		Tweetadapter tweetAdapter = new Tweetadapter(this, model.getTweets());
+		model.addObserver(tweetAdapter);
 		listView.setAdapter(tweetAdapter);
 	}
 

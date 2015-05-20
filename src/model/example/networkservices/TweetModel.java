@@ -1,10 +1,14 @@
 package model.example.networkservices;
 
 import java.util.ArrayList;
+import java.util.Observable;
+import java.util.Observer;
+
+import android.util.Log;
 
 import com.example.networkservices.Tweet;
 
-public class TweetModel {
+public class TweetModel extends Observable implements Observer{
 	private ArrayList<Tweet> tweets = new ArrayList<Tweet>();
 	
 	/**
@@ -19,6 +23,14 @@ public class TweetModel {
 	 * @param tweet the tweet to be added
 	 */
 	public void addTweet(Tweet tweet){
+		tweet.addObserver(this);
 		tweets.add(tweet);
+	}
+	@Override
+	public void update(Observable observable, Object data) {
+		setChanged();
+		notifyObservers();
+		Log.d("hoi", "model");
+		
 	}
 }

@@ -1,12 +1,21 @@
 package com.example.networkservices;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Observable;
+import java.util.Observer;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.annotation.SuppressLint;
+import android.util.Log;
 
-public class Tweet {
+
+public class Tweet extends Observable implements Observer {
 	private String text;
 	private String datum;
 	private User user;
@@ -21,6 +30,7 @@ public class Tweet {
 		text = tweetObj.getString("text");
 		datum = tweetObj.getString("created_at");
 		user = new User(tweetObj.getJSONObject("user"));
+		user.addObserver(this);
 		
 		// leest de entities uit en haalt alle hashtags eruit
 		JSONObject entitieObj = tweetObj.getJSONObject("entities");
@@ -51,10 +61,26 @@ public class Tweet {
 	
 	/**
 	 * Getter for the datum that the tweet has been send
+	 * Formats the date string first into a date object.
 	 * @return the date when the tweet has sended
 	 */
 	public String getDatum() {
-		return datum;
+		SimpleDateFormat readFormat = new SimpleDateFormat("EEE MMM d HH:mm:ss zzz yyyy", Locale.ENGLISH);
+		SimpleDateFormat writeFormat = new SimpleDateFormat("dd MMMM yyyy  HH:mm", Locale.getDefault());
+		Date date = null;
+		try {
+			date = readFormat.parse(datum);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		
+		String formattedDate = "";
+		if (date != null) {
+			formattedDate = writeFormat.format(date);
+		}
+		
+		Log.d("datum", formattedDate);
+		return formattedDate;
 	}
 	
 	/**
@@ -67,5 +93,13 @@ public class Tweet {
 	
 	public ArrayList<Entities> getEntities() {
 		return entities;
+	}
+
+	@Override
+	public void update(Observable observable, Object data) {
+		setChanged();
+		notifyObservers();
+		Log.d("hoi", "Tweet");
+		
 	}
 }

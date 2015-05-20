@@ -14,11 +14,11 @@ public class Entities {
 		}
 	}
 	
-	public int getIndiceEen() {
+	public int getIndexEen() {
 		return indices.get(0);
 	}
 	
-	public int getIndiceTwee() {
+	public int getIndexTwee() {
 		return indices.get(1);
 	}
 	
