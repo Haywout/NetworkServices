@@ -13,14 +13,18 @@ import org.json.JSONObject;
 
 import android.app.Activity;
 import android.content.res.AssetManager;
+import android.opengl.Visibility;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 
 public class MainActivity extends Activity {
 	private String jsonInput;
 	private TweetModel model;
+	private LinearLayout llSearchLayout, llMakeTweetLayout;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +56,8 @@ public class MainActivity extends Activity {
 		}
 
 		ListView listView = (ListView) findViewById(R.id.lvTweet);
+		llMakeTweetLayout = (LinearLayout) findViewById(R.id.llmakeTweet);
+		llSearchLayout = (LinearLayout) findViewById(R.id.llSearch);
 		Tweetadapter tweetAdapter = new Tweetadapter(this, model.getTweets());
 		model.addObserver(tweetAdapter);
 		listView.setAdapter(tweetAdapter);
@@ -70,8 +76,25 @@ public class MainActivity extends Activity {
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
-		if (id == R.id.action_settings) {
-			return true;
+		if (id == R.id.action_add) {
+			
+			if (llMakeTweetLayout.getVisibility() != View.VISIBLE) {
+				llMakeTweetLayout.setVisibility(View.VISIBLE);
+				if (llSearchLayout.getVisibility() == View.VISIBLE) {
+					llSearchLayout.setVisibility(View.GONE);
+				}
+			} else {
+				llMakeTweetLayout.setVisibility(View.GONE);
+			}
+		} else if (id == R.id.action_search) {
+			if (llSearchLayout.getVisibility() != View.VISIBLE) {
+				llSearchLayout.setVisibility(View.VISIBLE);
+				if (llMakeTweetLayout.getVisibility() == View.VISIBLE) {
+					llMakeTweetLayout.setVisibility(View.GONE);
+				}
+			} else {
+				llSearchLayout.setVisibility(View.GONE);
+			}
 		}
 
 		return super.onOptionsItemSelected(item);
