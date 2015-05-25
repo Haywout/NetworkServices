@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 
 import model.example.networkservices.TweetModel;
 
@@ -15,6 +17,7 @@ import android.app.Activity;
 import android.content.res.AssetManager;
 import android.opengl.Visibility;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -61,6 +64,8 @@ public class MainActivity extends Activity {
 		Tweetadapter tweetAdapter = new Tweetadapter(this, model.getTweets());
 		model.addObserver(tweetAdapter);
 		listView.setAdapter(tweetAdapter);
+		
+		
 	}
 
 	@Override

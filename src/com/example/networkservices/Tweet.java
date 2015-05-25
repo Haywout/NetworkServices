@@ -32,21 +32,26 @@ public class Tweet extends Observable implements Observer {
 		user = new User(tweetObj.getJSONObject("user"));
 		user.addObserver(this);
 		
-		// leest de entities uit en haalt alle hashtags eruit
+		// leest de entities uit 
 		JSONObject entitieObj = tweetObj.getJSONObject("entities");
-		JSONArray hashtagsJSON = entitieObj.getJSONArray("hashtags");
 		
+		// haalt alle hashtags uit het entitie object
+		JSONArray hashtagsJSON = entitieObj.getJSONArray("hashtags");
+		// haalt alle url entitieiten uit het entitie JSON object
+				JSONArray urlsJSON = entitieObj.getJSONArray("urls");
+		// haalt alle usermentions uit het entitie JSON object
+				JSONArray mentions = entitieObj.getJSONArray("user_mentions");
 		// maakt voor elke hashtag een nieuw hashtag object aan
 		for (int i = 0; i < hashtagsJSON.length(); i++) {
 			entities.add(new Hashtag(hashtagsJSON.getJSONObject(i)));
 		}
-		
-		// haalt alle url entitieiten uit het entitie JSON object
-		JSONArray urlsJSON = entitieObj.getJSONArray("urls");
-		
 		// maakt voor elke url een nieuw urlObject.
 		for (int i = 0; i < urlsJSON.length(); i++) {
 			entities.add(new Url(urlsJSON.getJSONObject(i)));
+		}
+		// maakt voor elke usermention een nieuw usermention object
+		for (int i = 0; i < mentions.length(); i++) {
+			entities.add(new UserMentions(mentions.getJSONObject(i)));
 		}
 		
 	}

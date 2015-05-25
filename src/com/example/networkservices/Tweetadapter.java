@@ -11,6 +11,7 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,7 +21,7 @@ import android.widget.TextView;
 
 public class Tweetadapter extends ArrayAdapter<Tweet> implements Observer {
 	private Context context;
-	
+	private static int countNumber = 0;
 	public Tweetadapter(Context context, ArrayList<Tweet> tweets) {
 		super(context, 0, tweets);
 		this.context = context;
@@ -50,41 +51,52 @@ public class Tweetadapter extends ArrayAdapter<Tweet> implements Observer {
 				tweetStringText);
 		final SpannableStringBuilder sbUser = new SpannableStringBuilder(
 				userName);
-		final ForegroundColorSpan urlFCS = new ForegroundColorSpan(Color.rgb(
-				40, 40, 255));
-		final ForegroundColorSpan hashtagFCS = new ForegroundColorSpan(
-				Color.rgb(40, 255, 40));
+		
+		int hashtagColor = Color.rgb(40, 255, 40);
+		int urlColor = Color.rgb(40, 40, 255);
+		int usermentionsColor = Color.rgb(40, 40, 200);
+		
 		final StyleSpan nameBoldStyle = new StyleSpan(
 				android.graphics.Typeface.BOLD);
 		
-		
-		
 		ArrayList<Entities> tweetEntities = tweet.getEntities();
-
+		
+		//sbTweet.setSpan(testFCS, 0, 4, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
 		for (Entities entities : tweetEntities) {
 			if (entities instanceof Hashtag) {
-				sbTweet.setSpan(hashtagFCS, entities.getIndexEen(),
+				Log.d("entitie", "Hashtag");
+				sbTweet.setSpan(new ForegroundColorSpan(
+						hashtagColor), entities.getIndexEen(),
 						entities.getIndexTwee(),
-						Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+						Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 			} else if (entities instanceof Url) {
-				sbTweet.setSpan(urlFCS, entities.getIndexEen(),
+				Log.d("entitie", "Url");
+				sbTweet.setSpan(new ForegroundColorSpan(
+						urlColor), entities.getIndexEen(),
 						entities.getIndexTwee(),
-						Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+						Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			} else if (entities instanceof UserMentions) {
+				Log.d("entitie", "UserM");
+				sbTweet.setSpan(new ForegroundColorSpan(
+						usermentionsColor), entities.getIndexEen(),
+						entities.getIndexTwee(),
+						Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 			}
+				
 		}
 
 		sbUser.setSpan(nameBoldStyle, 0, userName.length(),
 				Spannable.SPAN_INCLUSIVE_INCLUSIVE);
-
-		// zo kan het gewoon verder
 		
+		// loads user picture. 
+		// If no picture available it makes a new task to download the image
 		Bitmap userPicture = user.getScreenPicture();
 		if (userPicture == null) {
 			DownloadUserImageTask task = new DownloadUserImageTask(user, context);
 			task.execute(user.getPictureURL());
 		}
 	
-		
+		// sets all data in the components on the screen
 		gebruikersIcoon.setImageBitmap(user.getScreenPicture());
 		gebruikersNaam.setText(sbUser);
 		gebruikersSchermnaam.setText(tweet.getUser().getScreenName());
