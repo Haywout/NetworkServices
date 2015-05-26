@@ -1,8 +1,13 @@
 package model.example.networkservices;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Observable;
 import java.util.Observer;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.util.Log;
 
@@ -10,6 +15,15 @@ import com.example.networkservices.Tweet;
 
 public class TweetModel extends Observable implements Observer{
 	private ArrayList<Tweet> tweets = new ArrayList<Tweet>();
+	private String jsonString = "";
+	
+	
+	public void setJsonString(String jsonString) {
+		this.jsonString = jsonString;
+		generateTweetList();
+		setChanged();
+		notifyObservers();
+	}
 	
 	/**
 	 * Getter to get the arraylist with tweets
@@ -28,9 +42,26 @@ public class TweetModel extends Observable implements Observer{
 	}
 	@Override
 	public void update(Observable observable, Object data) {
+		
 		setChanged();
 		notifyObservers();
 		Log.d("hoi", "model");
 		
+	}
+	
+	public void generateTweetList(){
+		tweets.clear();
+		try {
+			JSONObject zoekresultaat = new JSONObject(jsonString);
+			JSONArray tweetsJson = zoekresultaat.getJSONArray("statuses");
+
+			// doorloopt de array om zo alle tweets eruit te halen
+			for (int i = 0; i < tweetsJson.length(); i++) {
+				addTweet(new Tweet(tweetsJson.getJSONObject(i)));
+			}
+
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
 	}
 }
