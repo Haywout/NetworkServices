@@ -36,11 +36,27 @@ public class Tweet extends Observable implements Observer {
 		JSONObject entitieObj = tweetObj.getJSONObject("entities");
 		
 		// haalt alle hashtags uit het entitie object
-		JSONArray hashtagsJSON = entitieObj.getJSONArray("hashtags");
+		JSONArray hashtagsJSON = null;
+		if (entitieObj.has("hashtags")) {
+			hashtagsJSON = entitieObj.getJSONArray("hashtags");
+		}
+		
 		// haalt alle url entitieiten uit het entitie JSON object
-				JSONArray urlsJSON = entitieObj.getJSONArray("urls");
+		JSONArray urlsJSON = null;
+		if (entitieObj.has("urls")) {
+			urlsJSON = entitieObj.getJSONArray("urls");
+		}
 		// haalt alle usermentions uit het entitie JSON object
-				JSONArray mentions = entitieObj.getJSONArray("user_mentions");
+		JSONArray mentions = null;
+		if (entitieObj.has("user_mentions")) {
+			mentions = entitieObj.getJSONArray("user_mentions");
+		}
+		// haalt alle afbeeldingen uit het entitie JSON object
+		JSONArray media = null;
+		if (entitieObj.has("media")) {
+			media = entitieObj.getJSONArray("media");
+		}
+		
 		// maakt voor elke hashtag een nieuw hashtag object aan
 		for (int i = 0; i < hashtagsJSON.length(); i++) {
 			entities.add(new Hashtag(hashtagsJSON.getJSONObject(i)));
@@ -53,6 +69,14 @@ public class Tweet extends Observable implements Observer {
 		for (int i = 0; i < mentions.length(); i++) {
 			entities.add(new UserMentions(mentions.getJSONObject(i)));
 		}
+		
+		// maakt voor elke hashtag een nieuw hashtag object aan
+		if (media != null) {
+			for (int i = 0; i < media.length(); i++) {
+				entities.add(new Media(media.getJSONObject(i)));
+			}
+		}
+		
 		
 	}
 	

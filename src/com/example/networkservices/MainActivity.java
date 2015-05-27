@@ -20,8 +20,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.R.color;
 import android.app.Activity;
 import android.content.res.AssetManager;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Base64;
@@ -65,13 +67,15 @@ public class MainActivity extends Activity {
 				.getApplicationContext();
 		model = app.getModel();
 
-		// lees het json bestand uit
 		
-
+		
+		// haal de componenten op
 		ListView listView = (ListView) findViewById(R.id.lvTweet);
 		llMakeTweetLayout = (LinearLayout) findViewById(R.id.llmakeTweet);
 		llSearchLayout = (LinearLayout) findViewById(R.id.llSearch);
 		btnSearch = (Button) findViewById(R.id.btnSearch);
+		btnSearch.setEnabled(false);
+		btnSearch.setBackgroundColor(Color.rgb(114, 149, 166));
 		etSearch = (EditText) findViewById(R.id.etSearchText);
 		Tweetadapter tweetAdapter = new Tweetadapter(this, model.getTweets());
 		model.addObserver(tweetAdapter);
@@ -101,8 +105,8 @@ public class MainActivity extends Activity {
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
+		// als er op de knop wordt gedrukt (op de actionbar) om een tweet te maken
 		if (id == R.id.action_add) {
-
 			if (llMakeTweetLayout.getVisibility() != View.VISIBLE) {
 				llMakeTweetLayout.setVisibility(View.VISIBLE);
 				if (llSearchLayout.getVisibility() == View.VISIBLE) {
@@ -111,6 +115,7 @@ public class MainActivity extends Activity {
 			} else {
 				llMakeTweetLayout.setVisibility(View.GONE);
 			}
+		// als er op de knop wordt gedrukt (op de actionbar) om tweets te zoeken
 		} else if (id == R.id.action_search) {
 			if (llSearchLayout.getVisibility() != View.VISIBLE) {
 				llSearchLayout.setVisibility(View.VISIBLE);
@@ -124,7 +129,12 @@ public class MainActivity extends Activity {
 
 		return super.onOptionsItemSelected(item);
 	}
-
+	
+	
+	/**
+	 * Genereert eerst de authenticatie string. Om met deze vervolgens de bearer token op te halen.
+	 * @throws Exception
+	 */
 	private void generateOAUTHToken() throws Exception {
 
 		String authString = APIKEY + ":" + APISECRET;
@@ -135,47 +145,12 @@ public class MainActivity extends Activity {
 		task.execute(base64);
 
 	}
-
+	
 	/**
-	 * Reads an asset file and returns a string with the full contents.
 	 * 
-	 * @param filename
-	 *            The filename of the file to read.
-	 * @return The contents of the file.
-	 * @throws IOException
-	 *             If file could not be found or not read.
-	 */
-	private String readAssetIntoString(String filename) throws IOException {
-		BufferedReader br = null;
-		StringBuilder sb = new StringBuilder();
-
-		String line;
-		try {
-			InputStream is = getAssets().open(filename,
-					AssetManager.ACCESS_BUFFER);
-			br = new BufferedReader(new InputStreamReader(is));
-			while ((line = br.readLine()) != null) {
-				sb.append(line);
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw e;
-		} finally {
-			if (br != null) {
-				try {
-					br.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-		return sb.toString();
-	}
-
-	/**
-	 * Generates the Bearer token with the API Key and the API Secret
+	 * Asynctask om de Bearer token aan te vragen(als er nog geen bearer token is aangevraagd met die AutenticatieString)
+	 * Of om de bearer token op te halen van de twitter api, als die al wel een keer is aangevraagd.
 	 * 
-	 * @author Casper
 	 * 
 	 */
 	public class GenerateTokenTask extends AsyncTask<String, Void, String> {
@@ -207,15 +182,23 @@ public class MainActivity extends Activity {
 
 			return token;
 		}
-
+		
 		@Override
 		protected void onPostExecute(String result) {
 			bearerToken = result;
+			// zet de zoekknop op enabled zodat mensen kunnen gaan zoeken.
+			btnSearch.setEnabled(true);
+			btnSearch.setBackgroundColor(Color.rgb(80, 157, 221));
 			super.onPostExecute(result);
 		}
 
 	}
 	
+	/**
+	 * Een asynctask dat de tweets ophaalt met de gevraagde zoekterm.
+	 * Gebruikt hiervoor de bearertoken om bij twitter de zoekterm op te kunnen vragen.
+	 *
+	 */
 	public class GetTweetsTask extends AsyncTask<String, Void, String>{
 
 		@Override

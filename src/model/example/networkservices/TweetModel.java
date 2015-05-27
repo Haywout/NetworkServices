@@ -1,5 +1,6 @@
 package model.example.networkservices;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Observable;
@@ -54,7 +55,7 @@ public class TweetModel extends Observable implements Observer{
 		try {
 			JSONObject zoekresultaat = new JSONObject(jsonString);
 			JSONArray tweetsJson = zoekresultaat.getJSONArray("statuses");
-
+			
 			// doorloopt de array om zo alle tweets eruit te halen
 			for (int i = 0; i < tweetsJson.length(); i++) {
 				addTweet(new Tweet(tweetsJson.getJSONObject(i)));

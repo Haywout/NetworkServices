@@ -5,10 +5,7 @@
     android:orientation="vertical"
     android:background="@drawable/customborder" >
 
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical" >
+    
 
         <LinearLayout
             android:layout_width="fill_parent"
@@ -21,6 +18,7 @@
                 android:src="@drawable/ic_launcher" />
 
             <LinearLayout
+                android:id="@+id/llDatalayout"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical" >
@@ -62,7 +60,13 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Tweet"
-                    android:textSize="12dp" />
+                    android:textSize="12sp" />
+
+                <ImageView
+                    android:id="@+id/imageView1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/nopicturepicture" />
 
             </LinearLayout>
 
@@ -76,6 +80,6 @@
             android:text="Knoppen Temp"
             android:visibility="gone" />
 
-    </LinearLayout>
+    
 
 </LinearLayout>
