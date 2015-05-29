@@ -1,9 +1,8 @@
 package com.example.networkservices;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 
 import model.example.networkservices.TweetModel;
 
@@ -16,14 +15,10 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.R.color;
 import android.app.Activity;
-import android.content.res.AssetManager;
-import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Base64;
@@ -36,15 +31,17 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
 	private static final String APIKEY = "1Omry6axtR8CxwPTul52t4Ser";
 	private static final String APISECRET = "jLJezF5rQA15NlRUuuCj5Ra4znqIy25YmkwHj9QCuGc59J1K0G";
-	private static final String ACCESSTOKEN = "3221154035-0ktlrwepNdRyURFcYNklYs0En3wiK5KYdYAQO3T";
-	private static final String ACCESSTOKENSECRET = "43C4V71c8j5n89K5OqCUs1oxeAO3EqAkv1K0BVzAmkNEu";
+	// private static final String ACCESSTOKEN =
+	// "3221154035-0ktlrwepNdRyURFcYNklYs0En3wiK5KYdYAQO3T";
+	// private static final String ACCESSTOKENSECRET =
+	// "43C4V71c8j5n89K5OqCUs1oxeAO3EqAkv1K0BVzAmkNEu";
 	private static String bearerToken = "";
 
-	private String jsonInput;
 	private TweetModel model;
 	private LinearLayout llSearchLayout, llMakeTweetLayout;
 	private Button btnSearch;
@@ -55,37 +52,33 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		try {
-			generateOAUTHToken();
-		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+		generateOAUTHToken();
 
 		// haal het model op
 		TweetApplication app = (TweetApplication) getBaseContext()
 				.getApplicationContext();
 		model = app.getModel();
 
-		
-		
 		// haal de componenten op
 		ListView listView = (ListView) findViewById(R.id.lvTweet);
 		llMakeTweetLayout = (LinearLayout) findViewById(R.id.llmakeTweet);
 		llSearchLayout = (LinearLayout) findViewById(R.id.llSearch);
 		btnSearch = (Button) findViewById(R.id.btnSearch);
 		btnSearch.setEnabled(false);
-		btnSearch.setBackgroundColor(Color.rgb(114, 149, 166));
 		etSearch = (EditText) findViewById(R.id.etSearchText);
 		Tweetadapter tweetAdapter = new Tweetadapter(this, model.getTweets());
 		model.addObserver(tweetAdapter);
 		listView.setAdapter(tweetAdapter);
 		btnSearch.setOnClickListener(new OnClickListener() {
-			
+
+			@SuppressWarnings("deprecation")
 			@Override
 			public void onClick(View v) {
 				GetTweetsTask getTweets = new GetTweetsTask();
-				getTweets.execute(etSearch.getText()+ "");
+				String searchString = etSearch.getText() + "";
+				btnSearch.setText("Searching ...");
+				btnSearch.setEnabled(false);
+				getTweets.execute(URLEncoder.encode(searchString));
 				Log.d("Search", "button pressed");
 			}
 		});
@@ -105,7 +98,8 @@ public class MainActivity extends Activity {
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
-		// als er op de knop wordt gedrukt (op de actionbar) om een tweet te maken
+		// als er op de knop wordt gedrukt (op de actionbar) om een tweet te
+		// maken
 		if (id == R.id.action_add) {
 			if (llMakeTweetLayout.getVisibility() != View.VISIBLE) {
 				llMakeTweetLayout.setVisibility(View.VISIBLE);
@@ -115,7 +109,8 @@ public class MainActivity extends Activity {
 			} else {
 				llMakeTweetLayout.setVisibility(View.GONE);
 			}
-		// als er op de knop wordt gedrukt (op de actionbar) om tweets te zoeken
+			// als er op de knop wordt gedrukt (op de actionbar) om tweets te
+			// zoeken
 		} else if (id == R.id.action_search) {
 			if (llSearchLayout.getVisibility() != View.VISIBLE) {
 				llSearchLayout.setVisibility(View.VISIBLE);
@@ -125,17 +120,20 @@ public class MainActivity extends Activity {
 			} else {
 				llSearchLayout.setVisibility(View.GONE);
 			}
+		} else if (id == R.id.action_refresh) {
+			generateOAUTHToken();
 		}
 
 		return super.onOptionsItemSelected(item);
 	}
-	
-	
+
 	/**
-	 * Genereert eerst de authenticatie string. Om met deze vervolgens de bearer token op te halen.
+	 * Genereert eerst de authenticatie string. Om met deze vervolgens de bearer
+	 * token op te halen.
+	 * 
 	 * @throws Exception
 	 */
-	private void generateOAUTHToken() throws Exception {
+	private void generateOAUTHToken() {
 
 		String authString = APIKEY + ":" + APISECRET;
 		String base64 = Base64.encodeToString(authString.getBytes(),
@@ -145,11 +143,12 @@ public class MainActivity extends Activity {
 		task.execute(base64);
 
 	}
-	
+
 	/**
 	 * 
-	 * Asynctask om de Bearer token aan te vragen(als er nog geen bearer token is aangevraagd met die AutenticatieString)
-	 * Of om de bearer token op te halen van de twitter api, als die al wel een keer is aangevraagd.
+	 * Asynctask om de Bearer token aan te vragen(als er nog geen bearer token
+	 * is aangevraagd met die AutenticatieString) Of om de bearer token op te
+	 * halen van de twitter api, als die al wel een keer is aangevraagd.
 	 * 
 	 * 
 	 */
@@ -172,62 +171,99 @@ public class MainActivity extends Activity {
 
 				String responseString = new BasicResponseHandler()
 						.handleResponse(response);
+				
 				JSONObject jsonO = new JSONObject(responseString);
 				token = jsonO.getString("access_token");
-
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			} catch (ClientProtocolException cpE) {
+				int statuscode = response.getStatusLine().getStatusCode();
+				cpE.printStackTrace();
+			} catch (UnsupportedEncodingException ueE) {
+				// niet van belang om er iets op uit te voeren
+			} catch (IOException ioE) {
+				// geen internet
+			} catch (JSONException jE) {
+				// something goes wrong when making it a json object
 			}
 
 			return token;
 		}
-		
+
 		@Override
 		protected void onPostExecute(String result) {
 			bearerToken = result;
 			// zet de zoekknop op enabled zodat mensen kunnen gaan zoeken.
-			btnSearch.setEnabled(true);
-			btnSearch.setBackgroundColor(Color.rgb(80, 157, 221));
+			if (!bearerToken.equals("")) {
+				btnSearch.setEnabled(true);
+			} else {
+				Toast.makeText(getBaseContext(), "Something went wrong with connecting to the twitter server", Toast.LENGTH_LONG).show();
+			}
+
 			super.onPostExecute(result);
 		}
 
 	}
-	
-	/**
-	 * Een asynctask dat de tweets ophaalt met de gevraagde zoekterm.
-	 * Gebruikt hiervoor de bearertoken om bij twitter de zoekterm op te kunnen vragen.
-	 *
-	 */
-	public class GetTweetsTask extends AsyncTask<String, Void, String>{
 
+	/**
+	 * Een asynctask dat de tweets ophaalt met de gevraagde zoekterm. Gebruikt
+	 * hiervoor de bearertoken om bij twitter de zoekterm op te kunnen vragen.
+	 * 
+	 */
+	public class GetTweetsTask extends AsyncTask<String, Void, String> {
+		private HttpResponse response;
 		@Override
 		protected String doInBackground(String... params) {
-			HttpClient client = new DefaultHttpClient();
-			HttpGet httpGet = new HttpGet("https://api.twitter.com/1.1/search/tweets.json?q=" + params[0]);	
-			httpGet.setHeader("Authorization", "Bearer " + bearerToken);
-			ResponseHandler<String> handler = new BasicResponseHandler();
 			String searchJSON = "";
-			try {
-				searchJSON = client.execute(httpGet, handler);
-			} catch (ClientProtocolException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		
+			if (!params[0].equals("")) {
+				HttpClient client = new DefaultHttpClient();
+				HttpGet httpGet = new HttpGet(
+						"https://api.twitter.com/1.1/search/tweets.json?q="
+								+ params[0]);
+				httpGet.setHeader("Authorization", "Bearer " + bearerToken);
+				
+				
+				
+				try {
+					ResponseHandler<String> handler = new BasicResponseHandler();
+					response = client.execute(httpGet);
+					searchJSON = handler.handleResponse(response);
+				} catch (ClientProtocolException e) {
+					int statusCode = response.getStatusLine().getStatusCode();
+					e.printStackTrace();
+				} catch (IOException e) {
+					searchJSON = "Internet";
+					//e.printStackTrace();
+				} catch (Exception ec){
+					ec.printStackTrace();
+				}
+				
+				
+			} 
 			return searchJSON;
+			
+			
+			
+
+			
 		}
-		
+
 		@Override
 		protected void onPostExecute(String result) {
-			model.setJsonString(result);
+			if (result.equals("")) {
+				Toast.makeText(getBaseContext(), "Not able to search for nothing", Toast.LENGTH_SHORT).show();
+			} else if (result.equals("Internet")) {
+				Log.d("check", "check");
+				Toast.makeText(getBaseContext(), "Cant connect to twitter service, Check your internet connection", Toast.LENGTH_LONG).show();
+			} 
+			else {
+				model.setJsonString(result);
+			}
+			
+			btnSearch.setEnabled(true);
+			btnSearch.setText("Search");
 			Log.d("search result", result);
 			super.onPostExecute(result);
 		}
-		
+
 	}
 
 }
