@@ -1,4 +1,4 @@
-package com.example.networkservices;
+package com.example.networkservices.model;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -10,6 +10,8 @@ import java.util.Observer;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.example.networkservices.UserMentions;
 
 import android.annotation.SuppressLint;
 import android.util.Log;

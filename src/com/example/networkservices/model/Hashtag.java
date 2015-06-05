@@ -1,4 +1,4 @@
-package com.example.networkservices;
+package com.example.networkservices.model;
 
 import org.json.JSONException;
 import org.json.JSONObject;

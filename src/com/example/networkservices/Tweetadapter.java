@@ -6,6 +6,14 @@ import java.util.Observable;
 import java.util.Observer;
 
 import javax.crypto.spec.IvParameterSpec;
+
+import com.example.networkservices.model.Entities;
+import com.example.networkservices.model.Hashtag;
+import com.example.networkservices.model.Media;
+import com.example.networkservices.model.Tweet;
+import com.example.networkservices.model.Url;
+import com.example.networkservices.model.User;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;

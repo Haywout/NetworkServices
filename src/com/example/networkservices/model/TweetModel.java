@@ -1,4 +1,4 @@
-package model.example.networkservices;
+package com.example.networkservices.model;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -12,7 +12,6 @@ import org.json.JSONObject;
 
 import android.util.Log;
 
-import com.example.networkservices.Tweet;
 
 public class TweetModel extends Observable implements Observer{
 	private ArrayList<Tweet> tweets = new ArrayList<Tweet>();

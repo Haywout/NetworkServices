@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
-import model.example.networkservices.TweetModel;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -17,6 +16,8 @@ import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.example.networkservices.model.TweetModel;
 
 import android.app.Activity;
 import android.os.AsyncTask;
@@ -36,10 +37,6 @@ import android.widget.Toast;
 public class MainActivity extends Activity {
 	private static final String APIKEY = "1Omry6axtR8CxwPTul52t4Ser";
 	private static final String APISECRET = "jLJezF5rQA15NlRUuuCj5Ra4znqIy25YmkwHj9QCuGc59J1K0G";
-	// private static final String ACCESSTOKEN =
-	// "3221154035-0ktlrwepNdRyURFcYNklYs0En3wiK5KYdYAQO3T";
-	// private static final String ACCESSTOKENSECRET =
-	// "43C4V71c8j5n89K5OqCUs1oxeAO3EqAkv1K0BVzAmkNEu";
 	private static String bearerToken = "";
 
 	private TweetModel model;
@@ -98,20 +95,9 @@ public class MainActivity extends Activity {
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
-		// als er op de knop wordt gedrukt (op de actionbar) om een tweet te
-		// maken
-		if (id == R.id.action_add) {
-			if (llMakeTweetLayout.getVisibility() != View.VISIBLE) {
-				llMakeTweetLayout.setVisibility(View.VISIBLE);
-				if (llSearchLayout.getVisibility() == View.VISIBLE) {
-					llSearchLayout.setVisibility(View.GONE);
-				}
-			} else {
-				llMakeTweetLayout.setVisibility(View.GONE);
-			}
 			// als er op de knop wordt gedrukt (op de actionbar) om tweets te
 			// zoeken
-		} else if (id == R.id.action_search) {
+		if (id == R.id.action_search) {
 			if (llSearchLayout.getVisibility() != View.VISIBLE) {
 				llSearchLayout.setVisibility(View.VISIBLE);
 				if (llMakeTweetLayout.getVisibility() == View.VISIBLE) {
@@ -252,7 +238,7 @@ public class MainActivity extends Activity {
 				Toast.makeText(getBaseContext(), "Not able to search for nothing", Toast.LENGTH_SHORT).show();
 			} else if (result.equals("Internet")) {
 				Log.d("check", "check");
-				Toast.makeText(getBaseContext(), "Cant connect to twitter service, Check your internet connection", Toast.LENGTH_LONG).show();
+				Toast.makeText(getBaseContext(), "Cant connect to twitter service, Check your internet connection, and try again later", Toast.LENGTH_LONG).show();
 			} 
 			else {
 				model.setJsonString(result);

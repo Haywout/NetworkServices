@@ -1,6 +1,7 @@
 package com.example.networkservices;
 
-import model.example.networkservices.TweetModel;
+import com.example.networkservices.model.TweetModel;
+
 import android.app.Application;
 
 public class TweetApplication extends Application{

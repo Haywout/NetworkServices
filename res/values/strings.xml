@@ -9,5 +9,6 @@
     <string name="search">Search</string>
     <string name="send">Send</string>
     <string name="refresh_token">Refresh</string>
+    <string name="title_activity_login">LoginActivity</string>
 
 </resources>

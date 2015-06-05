@@ -1,4 +1,4 @@
-package com.example.networkservices;
+package com.example.networkservices.model;
 
 import java.util.ArrayList;
 

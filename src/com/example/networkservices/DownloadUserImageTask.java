@@ -2,6 +2,9 @@ package com.example.networkservices;
 
 import java.io.InputStream;
 
+import com.example.networkservices.model.User;
+
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
