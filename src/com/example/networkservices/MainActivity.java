@@ -5,6 +5,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
 
+import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
@@ -20,6 +22,8 @@ import org.json.JSONObject;
 import com.example.networkservices.model.TweetModel;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Base64;
@@ -108,6 +112,19 @@ public class MainActivity extends Activity {
 			}
 		} else if (id == R.id.action_refresh) {
 			generateOAUTHToken();
+		} else if (id == R.id.action_logout) {
+			TweetApplication app = (TweetApplication) getApplicationContext();
+			CommonsHttpOAuthConsumer consumer = app.getConsumer();
+			consumer.setTokenWithSecret(null, null);
+			
+			SharedPreferences prefs = getSharedPreferences(LoginActivity.TOKENS, 0);
+			SharedPreferences.Editor editor = prefs.edit();
+			editor.putString(LoginActivity.TOKEN, null);
+			editor.putString(LoginActivity.TOKENSECRET, null);
+			editor.commit();
+			Intent returnToLogin = new Intent(this, LoginActivity.class);
+			startActivity(returnToLogin);
+			finish();
 		}
 
 		return super.onOptionsItemSelected(item);

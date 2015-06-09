@@ -12,5 +12,10 @@
         android:title="@string/refresh_token"
         android:icon="@drawable/ic_action_refresh"
         android:showAsAction="always"/>  
+     
+    <item android:id="@+id/action_logout" 
+        android:title="@string/log_out"
+        android:icon="@drawable/ic_log_out"
+        android:showAsAction="always"/>  
 
 </menu>

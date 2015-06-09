@@ -28,10 +28,12 @@ public final class R {
         public static final int ic_action_search=0x7f020003;
         public static final int ic_kawaii_tweet=0x7f020004;
         public static final int ic_launcher=0x7f020005;
-        public static final int nopicturepicture=0x7f020006;
+        public static final int ic_log_out=0x7f020006;
+        public static final int nopicturepicture=0x7f020007;
     }
     public static final class id {
         public static final int LinearLayout1=0x7f080001;
+        public static final int action_logout=0x7f080013;
         public static final int action_refresh=0x7f080012;
         public static final int action_search=0x7f080011;
         public static final int action_settings=0x7f080010;
@@ -65,6 +67,7 @@ public final class R {
         public static final int add_tweet=0x7f050003;
         public static final int app_name=0x7f050000;
         public static final int hello_world=0x7f050001;
+        public static final int log_out=0x7f050009;
         public static final int refresh_token=0x7f050007;
         public static final int search=0x7f050005;
         public static final int search_tweet=0x7f050004;

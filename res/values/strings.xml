@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name"></string>
+    <string name="app_name">TweetKawaii</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="add_tweet">Make tweet</string>
@@ -9,6 +9,7 @@
     <string name="search">Search</string>
     <string name="send">Send</string>
     <string name="refresh_token">Refresh</string>
-    <string name="title_activity_login">LoginActivity</string>
+    <string name="title_activity_login">Login</string>
+    <string name="log_out">Log out</string>
 
 </resources>
