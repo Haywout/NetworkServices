@@ -36,6 +36,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
@@ -47,12 +48,13 @@ public class MainActivity extends Activity {
 	private LinearLayout llSearchLayout, llMakeTweetLayout;
 	private Button btnSearch;
 	private EditText etSearch;
+	private ProgressBar pbSearchBar;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-
+		getActionBar().setHomeButtonEnabled(true);
 		generateOAUTHToken();
 
 		// haal het model op
@@ -65,6 +67,7 @@ public class MainActivity extends Activity {
 		llMakeTweetLayout = (LinearLayout) findViewById(R.id.llmakeTweet);
 		llSearchLayout = (LinearLayout) findViewById(R.id.llSearch);
 		btnSearch = (Button) findViewById(R.id.btnSearch);
+		
 		btnSearch.setEnabled(false);
 		etSearch = (EditText) findViewById(R.id.etSearchText);
 		Tweetadapter tweetAdapter = new Tweetadapter(this, model.getTweets());
@@ -101,29 +104,7 @@ public class MainActivity extends Activity {
 		int id = item.getItemId();
 			// als er op de knop wordt gedrukt (op de actionbar) om tweets te
 			// zoeken
-		if (id == R.id.action_search) {
-			if (llSearchLayout.getVisibility() != View.VISIBLE) {
-				llSearchLayout.setVisibility(View.VISIBLE);
-				if (llMakeTweetLayout.getVisibility() == View.VISIBLE) {
-					llMakeTweetLayout.setVisibility(View.GONE);
-				}
-			} else {
-				llSearchLayout.setVisibility(View.GONE);
-			}
-		} else if (id == R.id.action_refresh) {
-			generateOAUTHToken();
-		} else if (id == R.id.action_logout) {
-			TweetApplication app = (TweetApplication) getApplicationContext();
-			CommonsHttpOAuthConsumer consumer = app.getConsumer();
-			consumer.setTokenWithSecret(null, null);
-			
-			SharedPreferences prefs = getSharedPreferences(LoginActivity.TOKENS, 0);
-			SharedPreferences.Editor editor = prefs.edit();
-			editor.putString(LoginActivity.TOKEN, null);
-			editor.putString(LoginActivity.TOKENSECRET, null);
-			editor.commit();
-			Intent returnToLogin = new Intent(this, LoginActivity.class);
-			startActivity(returnToLogin);
+		if (id == android.R.id.home) {
 			finish();
 		}
 
@@ -211,18 +192,18 @@ public class MainActivity extends Activity {
 	 * hiervoor de bearertoken om bij twitter de zoekterm op te kunnen vragen.
 	 * 
 	 */
-	public class GetTweetsTask extends AsyncTask<String, Void, String> {
+	public class GetTweetsTask extends AsyncTask<String, Integer, String> {
 		private HttpResponse response;
 		@Override
 		protected String doInBackground(String... params) {
 			String searchJSON = "";
 			if (!params[0].equals("")) {
+				
 				HttpClient client = new DefaultHttpClient();
 				HttpGet httpGet = new HttpGet(
 						"https://api.twitter.com/1.1/search/tweets.json?q="
-								+ params[0]);
+								+ params[0]+ "&result_type=recent&count=20");
 				httpGet.setHeader("Authorization", "Bearer " + bearerToken);
-				
 				
 				
 				try {
@@ -258,7 +239,7 @@ public class MainActivity extends Activity {
 				Toast.makeText(getBaseContext(), "Cant connect to twitter service, Check your internet connection, and try again later", Toast.LENGTH_LONG).show();
 			} 
 			else {
-				model.setJsonString(result);
+				model.handleTweetSearch(result);
 			}
 			
 			btnSearch.setEnabled(true);
@@ -266,6 +247,8 @@ public class MainActivity extends Activity {
 			Log.d("search result", result);
 			super.onPostExecute(result);
 		}
+		
+		
 
 	}
 

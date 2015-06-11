@@ -12,6 +12,11 @@ public class User extends Observable{
 	private String name;
 	private String screenName;
 	private String pictureURL;
+	
+	private int followers;
+	private int send_tweets;
+	private int following;
+	
 	private Bitmap screenPicture;
 	/**
 	 * public construtor
@@ -22,6 +27,9 @@ public class User extends Observable{
 		name = userObject.getString("name");
 		screenName = userObject.getString("screen_name");
 		pictureURL =  userObject.getString("profile_image_url");
+		followers = userObject.getInt("followers_count");
+		following = userObject.getInt("friends_count");
+		send_tweets = userObject.getInt("statuses_count");
 		
 	}
 	
@@ -54,6 +62,30 @@ public class User extends Observable{
 	
 	public Bitmap getScreenPicture() {
 		return screenPicture;
+	}
+	
+	public int getFollowers() {
+		return followers;
+	}
+	
+	public int getFollowing() {
+		return following;
+	}
+	
+	public int getSend_tweets() {
+		return send_tweets;
+	}
+	
+	public void updateUser(JSONObject userObject) throws JSONException{
+		name = userObject.getString("name");
+		screenName = userObject.getString("screen_name");
+		pictureURL =  userObject.getString("profile_image_url");
+		followers = userObject.getInt("followers_count");
+		following = userObject.getInt("following");
+		send_tweets = userObject.getInt("statuses_count");
+		
+		setChanged();
+		notifyObservers();
 	}
 	
 	

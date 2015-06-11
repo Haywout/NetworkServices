@@ -9,7 +9,16 @@
     <string name="search">Search</string>
     <string name="send">Send</string>
     <string name="refresh_token">Refresh</string>
-    <string name="title_activity_login">Login</string>
+    <string name="title_activity_login">TweetKawaii</string>
     <string name="log_out">Log out</string>
+    <string name="title_activity_home"></string>
+    <string name="create_tweet">Creat tweet</string>
+    <string name="timeline">TimeLine</string>
+    <string name="user_details_title">User</string>
+    <string name="title_activity_user_details">UserDetailsActivity</string>
+    <string name="following_text">Following:</string>
+    <string name="followers_text">Followers:</string>
+    <string name="sendedTweets_text">Send Tweets:</string>
+    <string name="name">name</string>
 
 </resources>

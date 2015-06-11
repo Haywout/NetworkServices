@@ -17,7 +17,6 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:visibility="gone"
         android:paddingBottom="4dp" >
 
         <EditText
@@ -40,34 +39,8 @@
         />
 
     </LinearLayout>
-    
-    <LinearLayout
-        android:id="@+id/llmakeTweet"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:visibility="gone"
-        android:paddingBottom="4dp" >
 
-        <EditText
-            android:id="@+id/etTweettext"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:ems="10" >
-
-            <requestFocus />
-        </EditText>
-
-        <Button
-            android:id="@+id/btnSendTweet"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="right"
-            android:text="@string/send"
-        />
-
-    </LinearLayout>
+   
 
     <ListView
         android:id="@+id/lvTweet"
