@@ -11,9 +11,26 @@ import org.json.JSONObject;
 import android.util.Log;
 
 
+/*
+ *  5 get requests:
+ *  Tweet Search (get tweets/search)
+ *  Home timeline (get tweets/home_timeline)
+ *  User search	(get users/search)
+ *  Logged in user profile (account verify_credentials)
+ *  person user profile
+ *  
+ *  3 post requests:
+ *  Tweet
+ *  Retweet
+ *  Follow
+ *  
+ */
+
+
 public class TweetModel extends Observable implements Observer{
-	private ArrayList<Tweet> tweets = new ArrayList<Tweet>();
+	private ArrayList<Tweet> searchedTweets = new ArrayList<Tweet>();
 	private ArrayList<Tweet> timeline = new ArrayList<Tweet>();
+	private ArrayList<User> searchedUsers = new ArrayList<User>();
 	private User loggedInUser;
 	
 	
@@ -29,14 +46,47 @@ public class TweetModel extends Observable implements Observer{
 		notifyObservers();
 	}
 	
+	public void handleUserSearch(String jsonString){
+		generateSearchedUserList(jsonString);
+		setChanged();
+		notifyObservers();
+	}
 	
+	
+
+	private void generateSearchedUserList(String jsonString) {
+		searchedUsers.clear();
+		try {
+			
+			JSONArray userJson = new JSONArray(jsonString);
+			
+			// doorloopt de array om zo alle tweets eruit te halen
+			for (int i = 0; i < userJson.length(); i++) {
+				addUser(new User(userJson.getJSONObject(i)));
+			}
+
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		
+	}
+
+	private void addUser(User user) {
+		user.addObserver(this);
+		searchedUsers.add(user);
+		
+	}
+	
+	public ArrayList<User> getSearchedUsers(){
+		return searchedUsers;
+	}
 
 	/**
 	 * Getter to get the arraylist with tweets
 	 * @return the arraylist tweets
 	 */
 	public ArrayList<Tweet> getTweets() {
-		return tweets;
+		return searchedTweets;
 	}
 	/**
 	 * Getter to get the timeline
@@ -52,7 +102,7 @@ public class TweetModel extends Observable implements Observer{
 	 */
 	public void addTweet(Tweet tweet){
 		tweet.addObserver(this);
-		tweets.add(tweet);
+		searchedTweets.add(tweet);
 	}
 	
 	@Override
@@ -68,7 +118,7 @@ public class TweetModel extends Observable implements Observer{
 	 * Generates the list with tweets that are on your timeline
 	 * @param jsonString the string with json text to convert to tweets
 	 */
-	public void generateTimeLineList(String jsonString){
+	private void generateTimeLineList(String jsonString){
 		
 			timeline.clear();
 			try {
@@ -102,7 +152,7 @@ public class TweetModel extends Observable implements Observer{
 	 * @param jsonString the string with json text of your search result.
 	 */
 	private void generateTweetList(String jsonString){
-		tweets.clear();
+		searchedTweets.clear();
 		try {
 			JSONObject zoekresultaat = new JSONObject(jsonString);
 			JSONArray tweetsJson = zoekresultaat.getJSONArray("statuses");

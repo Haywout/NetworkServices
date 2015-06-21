@@ -22,6 +22,7 @@ public class Tweet extends Observable implements Observer {
 	private String datum;
 	private User user;
 	private ArrayList<Entities> entities = new ArrayList<Entities>() ;
+	private String tweetId;
 	
 	/**
 	 * Public constructor
@@ -32,6 +33,7 @@ public class Tweet extends Observable implements Observer {
 		text = tweetObj.getString("text");
 		datum = tweetObj.getString("created_at");
 		user = new User(tweetObj.getJSONObject("user"));
+		tweetId = tweetObj.getString("id_str");
 		user.addObserver(this);
 		
 		// leest de entities uit 
@@ -132,5 +134,9 @@ public class Tweet extends Observable implements Observer {
 		notifyObservers();
 		Log.d("hoi", "Tweet");
 		
+	}
+	
+	public String getTweetId() {
+		return tweetId;
 	}
 }

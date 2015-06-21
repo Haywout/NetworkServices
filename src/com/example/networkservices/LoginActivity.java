@@ -38,19 +38,19 @@ public class LoginActivity extends Activity {
 		consumer = app.getConsumer();
 
 		Log.d("TokensPref", tempToken + " + " + tempTokenSecret);
-		 		
+
 		if (tempToken == null || tempTokenSecret == null) {
 			webview = (WebView) findViewById(R.id.webView1);
 
 			webview.setWebViewClient(new WebViewClient() {
 				@Override
 				public boolean shouldOverrideUrlLoading(WebView view, String url) {
-					if (url.startsWith(app.OAUTH_CALLBACK_URL)) {
+					if (url.startsWith(TweetApplication.OAUTH_CALLBACK_URL)) {
 						String oauthVerifier = url.split("=")[2];
 						Log.d("verifier", oauthVerifier);
 						RetrieveAccessTokenTask task = new RetrieveAccessTokenTask();
 						task.execute(oauthVerifier);
-						
+
 					}
 					return super.shouldOverrideUrlLoading(view, url);
 				}
@@ -59,9 +59,9 @@ public class LoginActivity extends Activity {
 			RetrieveRequestTokenTask task = new RetrieveRequestTokenTask();
 			task.execute(TweetApplication.OAUTH_CALLBACK_URL);
 		} else {
-			
+
 			consumer.setTokenWithSecret(tempToken, tempTokenSecret);
-			
+
 			startMainActivity();
 		}
 	}
@@ -71,8 +71,6 @@ public class LoginActivity extends Activity {
 		startActivity(i);
 		finish();
 	}
-
-	
 
 	private class RetrieveRequestTokenTask extends
 			AsyncTask<String, Void, String> {
@@ -123,7 +121,7 @@ public class LoginActivity extends Activity {
 			rememberCredents(token, tokenSecret);
 
 			Log.d("tokens", token + ", " + tokenSecret);
-			
+
 			startMainActivity();
 			super.onPostExecute(result);
 		}

@@ -32,58 +32,100 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends Activity {
+public class SearchActivity extends Activity {
 	private static final String APIKEY = "1Omry6axtR8CxwPTul52t4Ser";
 	private static final String APISECRET = "jLJezF5rQA15NlRUuuCj5Ra4znqIy25YmkwHj9QCuGc59J1K0G";
 	private static String bearerToken = "";
 
 	private TweetModel model;
-	private LinearLayout llSearchLayout, llMakeTweetLayout;
+	
+	private ListView lvList;
 	private Button btnSearch;
 	private EditText etSearch;
-	private ProgressBar pbSearchBar;
+	private TextView searchHint;
+	private String type;
+	
+	private CommonsHttpOAuthConsumer consumer;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
+		setContentView(R.layout.activity_search);
 		getActionBar().setHomeButtonEnabled(true);
-		generateOAUTHToken();
+		
+		//generateOAUTHToken();
 
 		// haal het model op
 		TweetApplication app = (TweetApplication) getBaseContext()
 				.getApplicationContext();
 		model = app.getModel();
+		
+		consumer = app.getConsumer();
 
 		// haal de componenten op
-		ListView listView = (ListView) findViewById(R.id.lvTweet);
-		llMakeTweetLayout = (LinearLayout) findViewById(R.id.llmakeTweet);
-		llSearchLayout = (LinearLayout) findViewById(R.id.llSearch);
+		lvList = (ListView) findViewById(R.id.lvTweet);
+		searchHint = (TextView) findViewById(R.id.tvSearch_Hint);
 		btnSearch = (Button) findViewById(R.id.btnSearch);
 		
-		btnSearch.setEnabled(false);
 		etSearch = (EditText) findViewById(R.id.etSearchText);
-		Tweetadapter tweetAdapter = new Tweetadapter(this, model.getTweets());
-		model.addObserver(tweetAdapter);
-		listView.setAdapter(tweetAdapter);
+		
+		lvList.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> parent,
+					View view, int position, long id) {
+				if (type.equals("user")) {
+					Log.d("Clicked on item", "Yeah");
+					seeDetails(position);
+				}
+				
+				
+			}
+
+		});
 		btnSearch.setOnClickListener(new OnClickListener() {
 
 			@SuppressWarnings("deprecation")
 			@Override
 			public void onClick(View v) {
-				GetTweetsTask getTweets = new GetTweetsTask();
-				String searchString = etSearch.getText() + "";
-				btnSearch.setText("Searching ...");
-				btnSearch.setEnabled(false);
-				getTweets.execute(URLEncoder.encode(searchString));
-				Log.d("Search", "button pressed");
+				
+				searchHint.setVisibility(View.GONE);
+				if (( etSearch.getText() + "").startsWith("@")) {
+					// zoek op gebruiker
+					type = "user";
+					Log.d("type", type);
+					UserAdapter userAdapter = new UserAdapter(SearchActivity.this, model.getSearchedUsers());
+					model.addObserver(userAdapter);
+					lvList.setAdapter(userAdapter);
+					GetUsersTask getUsers = new GetUsersTask();
+					String searchString = etSearch.getText() + "";
+					btnSearch.setText("Searching ...");
+					btnSearch.setEnabled(false);
+					getUsers.execute(URLEncoder.encode(searchString));
+					Log.d("Search", "button pressed");
+				} else {
+					// zoek naar tweets
+					
+					Tweetadapter tweetAdapter = new Tweetadapter(SearchActivity.this, model.getTweets());
+					model.addObserver(tweetAdapter);
+					lvList.setAdapter(tweetAdapter);
+					GetTweetsTask getTweets = new GetTweetsTask();
+					String searchString = etSearch.getText() + "";
+					btnSearch.setText("Searching ...");
+					btnSearch.setEnabled(false);
+					getTweets.execute(URLEncoder.encode(searchString));
+					Log.d("Search", "button pressed");
+				}
 			}
 		});
 
@@ -110,8 +152,18 @@ public class MainActivity extends Activity {
 
 		return super.onOptionsItemSelected(item);
 	}
+	
+	private void seeDetails(int position) {
+		Intent userDetailsIntent = new Intent(this, UserDetailsActivity.class);
+		userDetailsIntent.putExtra("position", position);
+		userDetailsIntent.putExtra("IntentType", "search");
+		startActivity(userDetailsIntent);
+	}
 
 	/**
+	 * 
+	 * Wordt niet meer gebruikt.
+	 * 
 	 * Genereert eerst de authenticatie string. Om met deze vervolgens de bearer
 	 * token op te halen.
 	 * 
@@ -129,6 +181,7 @@ public class MainActivity extends Activity {
 	}
 
 	/**
+	 * Wordt niet meer gebruikt. Er wordt nu gebruik gemaakt van de consumer tokens.
 	 * 
 	 * Asynctask om de Bearer token aan te vragen(als er nog geen bearer token
 	 * is aangevraagd met die AutenticatieString) Of om de bearer token op te
@@ -189,7 +242,7 @@ public class MainActivity extends Activity {
 
 	/**
 	 * Een asynctask dat de tweets ophaalt met de gevraagde zoekterm. Gebruikt
-	 * hiervoor de bearertoken om bij twitter de zoekterm op te kunnen vragen.
+	 * hiervoor de user  om bij twitter de zoekterm op te kunnen vragen.
 	 * 
 	 */
 	public class GetTweetsTask extends AsyncTask<String, Integer, String> {
@@ -202,11 +255,13 @@ public class MainActivity extends Activity {
 				HttpClient client = new DefaultHttpClient();
 				HttpGet httpGet = new HttpGet(
 						"https://api.twitter.com/1.1/search/tweets.json?q="
-								+ params[0]+ "&result_type=recent&count=20");
-				httpGet.setHeader("Authorization", "Bearer " + bearerToken);
+								+ params[0]);
+				
 				
 				
 				try {
+					consumer.sign(httpGet);
+					
 					ResponseHandler<String> handler = new BasicResponseHandler();
 					response = client.execute(httpGet);
 					searchJSON = handler.handleResponse(response);
@@ -240,6 +295,65 @@ public class MainActivity extends Activity {
 			} 
 			else {
 				model.handleTweetSearch(result);
+			}
+			
+			btnSearch.setEnabled(true);
+			btnSearch.setText("Search");
+			Log.d("search result", result);
+			super.onPostExecute(result);
+		}
+		
+		
+
+	}
+	
+	/**
+	 * Een asynctask dat de Users ophaalt met de gevraagde zoekterm. Gebruikt
+	 * hiervoor de user tokens om bij twitter de zoekterm op te kunnen vragen.
+	 * 
+	 */
+	public class GetUsersTask extends AsyncTask<String, Integer, String> {
+		private HttpResponse response;
+		@Override
+		protected String doInBackground(String... params) {
+			String searchJSON = "";
+			if (!params[0].equals("")) {
+				
+				HttpClient client = new DefaultHttpClient();
+				HttpGet httpGet = new HttpGet(
+						"https://api.twitter.com/1.1/users/search.json?q="
+								+ params[0]);
+				try {
+					consumer.sign(httpGet);
+					
+					ResponseHandler<String> handler = new BasicResponseHandler();
+					response = client.execute(httpGet);
+					searchJSON = handler.handleResponse(response);
+				} catch (ClientProtocolException e) {
+					int statusCode = response.getStatusLine().getStatusCode();
+					e.printStackTrace();
+				} catch (IOException e) {
+					searchJSON = "Internet";
+					//e.printStackTrace();
+				} catch (Exception ec){
+					ec.printStackTrace();
+				}
+				
+				
+			} 
+			return searchJSON;
+		}
+
+		@Override
+		protected void onPostExecute(String result) {
+			if (result.equals("")) {
+				Toast.makeText(getBaseContext(), "Not able to search for nothing", Toast.LENGTH_SHORT).show();
+			} else if (result.equals("Internet")) {
+				Log.d("check", "check");
+				Toast.makeText(getBaseContext(), "Cant connect to twitter service, Check your internet connection, and try again later", Toast.LENGTH_LONG).show();
+			} 
+			else {
+				model.handleUserSearch(result);
 			}
 			
 			btnSearch.setEnabled(true);

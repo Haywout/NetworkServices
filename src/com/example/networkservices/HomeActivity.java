@@ -132,7 +132,7 @@ public class HomeActivity extends Activity {
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
 		if (id == R.id.action_search) {
-			startActivity(new Intent(this, MainActivity.class));
+			startActivity(new Intent(this, SearchActivity.class));
 		} else if (id == R.id.action_logout) {
 			TweetApplication app = (TweetApplication) getApplicationContext();
 			CommonsHttpOAuthConsumer consumer = app.getConsumer();

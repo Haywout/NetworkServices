@@ -20,5 +20,7 @@
     <string name="followers_text">Followers:</string>
     <string name="sendedTweets_text">Send Tweets:</string>
     <string name="name">name</string>
+    <string name="retweet">Retweet</string>
+    <string name="search_hint">Use @ in your search to search for users</string>
 
 </resources>

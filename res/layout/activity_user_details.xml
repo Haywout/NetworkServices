@@ -29,11 +29,18 @@
         android:textSize="16sp" />
     
     <ImageView
-        android:id="@+id/imageView1"
+        android:id="@+id/ivUserPicture"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:src="@drawable/nopicturepicture" />
+
+    <Button
+        android:id="@+id/btnFollow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="Follow" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -102,5 +109,11 @@
         
 
     </LinearLayout>
+
+    <ListView
+        android:id="@+id/lvUserTimeLine"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+    </ListView>
 
 </LinearLayout>

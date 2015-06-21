@@ -1,11 +1,31 @@
 package com.example.networkservices;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
 import javax.crypto.spec.IvParameterSpec;
+
+import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
+import oauth.signpost.exception.OAuthCommunicationException;
+import oauth.signpost.exception.OAuthExpectationFailedException;
+import oauth.signpost.exception.OAuthMessageSignerException;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.protocol.HTTP;
 
 import com.example.networkservices.model.Entities;
 import com.example.networkservices.model.Hashtag;
@@ -22,32 +42,39 @@ import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.method.LinkMovementMethod;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class Tweetadapter extends ArrayAdapter<Tweet> implements Observer {
 	private Context context;
 	private static int countNumber = 0;
+	private CommonsHttpOAuthConsumer consumer;
+	
 	public Tweetadapter(Context context, ArrayList<Tweet> tweets) {
 		super(context, 0, tweets);
 		this.context = context;
+		consumer = ((TweetApplication) context.getApplicationContext()).getConsumer();
 	}
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-		Tweet tweet = getItem(position);
+		final Tweet tweet = getItem(position);
 		User user = tweet.getUser();
 		if (convertView == null) {
 			convertView = LayoutInflater.from(getContext()).inflate(
-					R.layout.listdetails, parent, false);
+					R.layout.listdetailstweets, parent, false);
 		}
 
 		ImageView gebruikersIcoon = (ImageView) convertView
@@ -58,6 +85,21 @@ public class Tweetadapter extends ArrayAdapter<Tweet> implements Observer {
 				.findViewById(R.id.tvGebruikersnaam);
 		TextView tweetDatum = (TextView) convertView.findViewById(R.id.tvDatum);
 		TextView tweetText = (TextView) convertView.findViewById(R.id.tvTweet);
+		Button button = (Button) convertView.findViewById(R.id.retweetButton);
+		
+		
+		button.setMovementMethod(LinkMovementMethod.getInstance());
+		
+		button.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				
+				postRetweetTask retweetTask = new postRetweetTask();
+				retweetTask.execute(tweet.getTweetId());
+				
+			}
+		});
 		LinearLayout ll = (LinearLayout) convertView.findViewById(R.id.llDatalayout);
 		String tweetStringText = tweet.getText();
 		String userName = tweet.getUser().getName();
@@ -103,18 +145,7 @@ public class Tweetadapter extends ArrayAdapter<Tweet> implements Observer {
 						usermentionsColor), entities.getIndexEen(),
 						entities.getIndexTwee(),
 						Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-			} else if (entities instanceof Media) {
-//				Bitmap picture = ((Media) entities).getPicture();
-//				ImageView view = (ImageView)convertView.findViewById(R.id.imageView1);
-//				if (picture == null) {
-//					ImageDownloader downloader = new ImageDownloader(entities);
-//					downloader.execute(((Media) entities).getMediaUrl());
-//					view.setVisibility(View.GONE);
-//				} else {
-//					view.setImageBitmap(picture);
-//					view.setVisibility(View.VISIBLE);
-//				}
-				
+			} else if (entities instanceof Media) {			
 				Bitmap picture = ((Media) entities).getPicture();
 				if (picture == null) {
 					ImageDownloader downloader = new ImageDownloader(entities);
@@ -124,11 +155,6 @@ public class Tweetadapter extends ArrayAdapter<Tweet> implements Observer {
 					view.setImageBitmap(((Media) entities).getPicture());
 					ll.addView(view);
 				}
-				
-				
-				
-				
-
 			} 
 		}
 		
@@ -199,6 +225,76 @@ public class Tweetadapter extends ArrayAdapter<Tweet> implements Observer {
 
 	public void updateList() {
 		notifyDataSetChanged();
+		
+	}
+	
+	
+	private class postRetweetTask extends AsyncTask<String, Void, String>{
+		private HttpResponse response;
+		private String returnJSON;
+		
+		
+		@Override
+		protected String doInBackground(String... params) {
+			HttpClient client = new DefaultHttpClient();
+			
+			HttpPost post = new HttpPost("https://api.twitter.com/1.1/statuses/retweet/" + params[0] + ".json");
+			
+			List<NameValuePair> parameters = new ArrayList<NameValuePair>();
+			parameters.add(new BasicNameValuePair("status", params[0]));
+			try {
+				post.setEntity(new UrlEncodedFormEntity(parameters, HTTP.UTF_8));
+			} catch (UnsupportedEncodingException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			
+			try {
+				consumer.sign(post);
+			} catch (OAuthMessageSignerException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (OAuthExpectationFailedException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (OAuthCommunicationException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			
+			ResponseHandler<String> handler = new BasicResponseHandler();
+			try {
+				response = client.execute(post);
+				returnJSON = handler.handleResponse(response);
+			} catch (ClientProtocolException e) {
+				int statusCode = response.getStatusLine().getStatusCode();
+				return "" + statusCode;
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			
+			
+			
+			return null;
+		}
+		
+		@Override
+		protected void onPostExecute(String result) {
+			if (result != null) {
+				if (result.equals("403")) {
+					Toast.makeText(context, "You already retweeted this tweet", Toast.LENGTH_LONG).show();
+				} 
+			} else {
+				Toast.makeText(context, "Succesfully retweeted", Toast.LENGTH_SHORT).show();
+			}
+			
+			Log.d("statuscode", "" + response.getStatusLine().getStatusCode());
+			
+			
+			super.onPostExecute(result);
+		}
 		
 	}
 
