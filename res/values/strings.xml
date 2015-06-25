@@ -22,5 +22,7 @@
     <string name="name">name</string>
     <string name="retweet">Retweet</string>
     <string name="search_hint">Use @ in your search to search for users</string>
+    <string name="follow">Follow</string>
+    <string name="desc">"Plaatje"</string>
 
 </resources>

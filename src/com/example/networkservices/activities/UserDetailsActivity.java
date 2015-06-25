@@ -1,11 +1,9 @@
-package com.example.networkservices;
+package com.example.networkservices.activities;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
 
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
 import oauth.signpost.exception.OAuthCommunicationException;
@@ -27,10 +25,6 @@ import org.apache.http.protocol.HTTP;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import com.example.networkservices.model.Tweet;
-import com.example.networkservices.model.TweetModel;
-import com.example.networkservices.model.User;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -40,12 +34,17 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.networkservices.R;
+import com.example.networkservices.TweetApplication;
+import com.example.networkservices.model.Tweet;
+import com.example.networkservices.model.TweetModel;
+import com.example.networkservices.model.User;
+import com.example.networkservices.view.Tweetadapter;
 
 public class UserDetailsActivity extends Activity {
 
@@ -53,7 +52,6 @@ public class UserDetailsActivity extends Activity {
 	private User user;
 	private TextView tvFollowersCount, tvFollowingCount, tvTweetsPostedCount,
 			tvUsername, tvUserNickName;
-	private ImageView ivUserImage;
 	private CommonsHttpOAuthConsumer consumer;
 	private Button btnFollow;
 	private ListView lvUserTimeLine;
@@ -138,6 +136,13 @@ public class UserDetailsActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 
+	/**
+	 * With this task you can get the account details of the person thats logged
+	 * in.
+	 * 
+	 * @author Casper
+	 * 
+	 */
 	private class getLoggedUserInfoTask extends AsyncTask<String, Void, String> {
 
 		private HttpResponse response;
@@ -152,13 +157,10 @@ public class UserDetailsActivity extends Activity {
 			try {
 				consumer.sign(httpGet);
 			} catch (OAuthMessageSignerException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			} catch (OAuthExpectationFailedException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			} catch (OAuthCommunicationException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 
@@ -192,9 +194,15 @@ public class UserDetailsActivity extends Activity {
 
 	}
 
+	/**
+	 * With this task you can follow people with the id that comes in the
+	 * params.
+	 * 
+	 * @author Casper
+	 * 
+	 */
 	private class FollowUserTask extends AsyncTask<String, Void, String> {
 		private HttpResponse response;
-		private String returnJSON;
 
 		@Override
 		protected String doInBackground(String... params) {
@@ -209,33 +217,29 @@ public class UserDetailsActivity extends Activity {
 			try {
 				post.setEntity(new UrlEncodedFormEntity(parameters, HTTP.UTF_8));
 			} catch (UnsupportedEncodingException e1) {
-				// TODO Auto-generated catch block
+
 				e1.printStackTrace();
 			}
 
 			try {
 				consumer.sign(post);
 			} catch (OAuthMessageSignerException e1) {
-				// TODO Auto-generated catch block
+
 				e1.printStackTrace();
 			} catch (OAuthExpectationFailedException e1) {
-				// TODO Auto-generated catch block
+
 				e1.printStackTrace();
 			} catch (OAuthCommunicationException e1) {
-				// TODO Auto-generated catch block
+
 				e1.printStackTrace();
 			}
-
-			ResponseHandler<String> handler = new BasicResponseHandler();
 			try {
 				response = client.execute(post);
-				returnJSON = handler.handleResponse(response);
 				statuscode = response.getStatusLine().getStatusCode();
 			} catch (ClientProtocolException e) {
 				statuscode = response.getStatusLine().getStatusCode();
 				return "" + statuscode;
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
@@ -264,6 +268,9 @@ public class UserDetailsActivity extends Activity {
 
 	}
 
+	/**
+	 * Updates the components on the screen
+	 */
 	private void updateScreenValues() {
 		tvFollowersCount.setText(user.getFollowers() + "");
 		tvFollowingCount.setText(user.getFollowing() + "");
@@ -272,6 +279,13 @@ public class UserDetailsActivity extends Activity {
 		tvUserNickName.setText(user.getScreenName());
 	}
 
+	/**
+	 * Gets the JSON from twitter that contains the usertimeline of the id that
+	 * has been send with it.
+	 * 
+	 * @author Casper
+	 * 
+	 */
 	private class getUserTimeLineTask extends AsyncTask<String, Void, String> {
 
 		private HttpResponse response;
@@ -287,13 +301,10 @@ public class UserDetailsActivity extends Activity {
 			try {
 				consumer.sign(httpGet);
 			} catch (OAuthMessageSignerException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			} catch (OAuthExpectationFailedException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			} catch (OAuthCommunicationException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 
@@ -325,6 +336,7 @@ public class UserDetailsActivity extends Activity {
 	}
 
 	private void handleResult(String result) {
+		// creates the user time line
 		try {
 			JSONArray usertimeline = new JSONArray(result);
 
@@ -332,13 +344,12 @@ public class UserDetailsActivity extends Activity {
 				Tweet tweet = new Tweet(usertimeline.getJSONObject(i));
 				tweet.addObserver(adapter);
 				usertimeLinelist.add(tweet);
-				
+
 			}
-			
+
 			adapter.notifyDataSetChanged();
 
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 

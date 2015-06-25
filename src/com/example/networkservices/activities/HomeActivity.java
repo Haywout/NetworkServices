@@ -1,10 +1,14 @@
-package com.example.networkservices;
+package com.example.networkservices.activities;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+
+import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
+import oauth.signpost.exception.OAuthCommunicationException;
+import oauth.signpost.exception.OAuthExpectationFailedException;
+import oauth.signpost.exception.OAuthMessageSignerException;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -18,13 +22,6 @@ import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
-
-import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
-import oauth.signpost.exception.OAuthCommunicationException;
-import oauth.signpost.exception.OAuthExpectationFailedException;
-import oauth.signpost.exception.OAuthMessageSignerException;
-
-import com.example.networkservices.model.TweetModel;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -44,6 +41,11 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.example.networkservices.R;
+import com.example.networkservices.TweetApplication;
+import com.example.networkservices.model.TweetModel;
+import com.example.networkservices.view.Tweetadapter;
+
 public class HomeActivity extends Activity {
 	private TweetModel model;
 	private CommonsHttpOAuthConsumer consumer;
@@ -59,72 +61,72 @@ public class HomeActivity extends Activity {
 		TweetApplication app = (TweetApplication) getApplicationContext();
 		consumer = app.getConsumer();
 		etMakeTweetText = (EditText) findViewById(R.id.etTweettext);
-		
+		// if there is no text in the edittext, disable the button. Else enable
+		// the button
 		etMakeTweetText.addTextChangedListener(new TextWatcher() {
-			
+
 			@Override
-			public void onTextChanged(CharSequence s, int start, int before, int count) {
+			public void onTextChanged(CharSequence s, int start, int before,
+					int count) {
 				if (etMakeTweetText.length() > 0) {
 					btnSendTweet.setEnabled(true);
 				} else {
 					btnSendTweet.setEnabled(false);
-				}			
+				}
 			}
-			
+
 			@Override
 			public void beforeTextChanged(CharSequence s, int start, int count,
 					int after) {
 			}
-			
+
 			@Override
 			public void afterTextChanged(Editable s) {
 			}
 		});
-		
+
 		btnSendTweet = (Button) findViewById(R.id.btnSendTweet);
 		btnSendTweet.setEnabled(false);
 		btnSendTweet.setOnClickListener(new OnClickListener() {
-			
+
 			@Override
 			public void onClick(View v) {
+				// get the text thats in the edittext
 				String tweetText = etMakeTweetText.getText() + "";
 				Log.d("Sendtweet clicked", "Clicked");
 				etMakeTweetText.setText("");
-				Toast.makeText(getBaseContext(), "Tweet has been sended", Toast.LENGTH_SHORT).show();
-				
+
+				// send the tweet in the asynctask.
 				postTweetTask postTask = new postTweetTask();
 				postTask.execute(tweetText);
-				
+
 			}
 		});
-		
+
 		llMakeTweet = (LinearLayout) findViewById(R.id.llmakeTweet);
 		llMakeTweet.setVisibility(View.GONE);
-		
+
 		model = app.getModel();
 		updateTimeLine();
-		
 
 		Tweetadapter tweetAdapter = new Tweetadapter(this, model.getTimeLine());
 		model.addObserver(tweetAdapter);
 		timeLineView.setAdapter(tweetAdapter);
 
 	}
-	
-	
-	
-	private void updateTimeLine(){
+
+	private void updateTimeLine() {
 		getTimeLineTask task = new getTimeLineTask();
 		task.execute("");
 	}
-	
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.home, menu);
 		return true;
 	}
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Handle action bar item clicks here. The action bar will
@@ -158,7 +160,7 @@ public class HomeActivity extends Activity {
 		} else if (id == R.id.action_userProfile) {
 			Intent goToUserProfile = new Intent(this, UserDetailsActivity.class);
 			startActivity(goToUserProfile);
-			
+
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -166,6 +168,7 @@ public class HomeActivity extends Activity {
 	private class getTimeLineTask extends AsyncTask<String, Void, String> {
 		private HttpResponse response;
 		private String searchJSON;
+
 		@Override
 		protected String doInBackground(String... params) {
 
@@ -175,13 +178,10 @@ public class HomeActivity extends Activity {
 			try {
 				consumer.sign(httpGet);
 			} catch (OAuthMessageSignerException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			} catch (OAuthExpectationFailedException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			} catch (OAuthCommunicationException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 
@@ -190,11 +190,13 @@ public class HomeActivity extends Activity {
 				response = client.execute(httpGet);
 				searchJSON = handler.handleResponse(response);
 			} catch (ClientProtocolException e) {
+				// als er iets is fout gegaan met de request sturen (oftewel
+				// statuscode is geen 200)
 				int statusCode = response.getStatusLine().getStatusCode();
 				return "" + statusCode;
 			} catch (IOException e) {
+				// als je geen internet hebt.
 				searchJSON = "Internet";
-				// e.printStackTrace();
 			} catch (Exception ec) {
 				ec.printStackTrace();
 			}
@@ -202,87 +204,83 @@ public class HomeActivity extends Activity {
 			return searchJSON;
 
 		}
-		
-		
+
 		@Override
 		protected void onPostExecute(String result) {
 			Log.d("timelineresult", result);
-			
-			if (!result.equals("")) {
+			if (result.equals("Internet")) {
+			} else if (!result.equals("")) {
 				model.handleTimeLine(result);
 			}
+
 			super.onPostExecute(result);
 		}
 
 	}
-	
-	
-	private class postTweetTask extends AsyncTask<String, Void, String>{
+
+	private class postTweetTask extends AsyncTask<String, Void, String> {
 		private HttpResponse response;
-		private String returnJSON;
+
 		@Override
 		protected String doInBackground(String... params) {
 			HttpClient client = new DefaultHttpClient();
-			
-			HttpPost post = new HttpPost("https://api.twitter.com/1.1/statuses/update.json");
-			
+
+			HttpPost post = new HttpPost(
+					"https://api.twitter.com/1.1/statuses/update.json");
+
 			List<NameValuePair> parameters = new ArrayList<NameValuePair>();
 			parameters.add(new BasicNameValuePair("status", params[0]));
 			try {
 				post.setEntity(new UrlEncodedFormEntity(parameters, HTTP.UTF_8));
 			} catch (UnsupportedEncodingException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
 			}
-			
+
 			try {
 				consumer.sign(post);
 			} catch (OAuthMessageSignerException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			} catch (OAuthExpectationFailedException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			} catch (OAuthCommunicationException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-			
-			ResponseHandler<String> handler = new BasicResponseHandler();
+
 			try {
 				response = client.execute(post);
-				returnJSON = handler.handleResponse(response);
 			} catch (ClientProtocolException e) {
+				// foute statuscode (dus geen 200)
 				int statusCode = response.getStatusLine().getStatusCode();
 				return "" + statusCode;
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				// geen internet
+				return "Internet";
 			}
-			
-			
-			
-			
+
 			return null;
 		}
-		
+
 		@Override
 		protected void onPostExecute(String result) {
 			if (result != null) {
 				if (result.equals("403")) {
-					Toast.makeText(getBaseContext(), "You can't post 2 of the same tweets", Toast.LENGTH_LONG).show();
+					Toast.makeText(getBaseContext(),
+							"You can't post 2 of the same tweets",
+							Toast.LENGTH_LONG).show();
+				} else if (result.equals("Internet")) {
+					Toast.makeText(getApplicationContext(),
+							"Je hebt geen internet", Toast.LENGTH_SHORT).show();
 				} else {
 					updateTimeLine();
+					Toast.makeText(getBaseContext(), "Tweet has been sended",
+							Toast.LENGTH_SHORT).show();
 				}
 			}
-			
-			
-			
+
 			Log.d("statuscode", "" + response.getStatusLine().getStatusCode());
-			
+
 			updateTimeLine();
 			super.onPostExecute(result);
 		}
-		
+
 	}
 }

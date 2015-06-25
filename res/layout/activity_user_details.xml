@@ -8,7 +8,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.example.networkservices.UserDetailsActivity" >
+    tools:context="com.example.networkservices.activities.UserDetailsActivity" >
 	
     <TextView
         android:id="@+id/tvNameUserDetailsActivity"
@@ -33,19 +33,21 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:src="@drawable/nopicturepicture" />
+        android:src="@drawable/nopicturepicture"
+        android:contentDescription="@string/desc" />
 
     <Button
         android:id="@+id/btnFollow"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="Follow" />
+        android:text="@string/follow" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal" >
+        android:orientation="horizontal"
+        android:baselineAligned="false" >
 
         <LinearLayout
             android:layout_width="fill_parent"

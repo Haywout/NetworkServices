@@ -1,9 +1,8 @@
-package com.example.networkservices;
+package com.example.networkservices.activities;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-
 
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
 
@@ -19,11 +18,8 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.example.networkservices.model.TweetModel;
-
 import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Base64;
@@ -36,11 +32,15 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.networkservices.R;
+import com.example.networkservices.TweetApplication;
+import com.example.networkservices.model.TweetModel;
+import com.example.networkservices.view.Tweetadapter;
+import com.example.networkservices.view.UserAdapter;
 
 public class SearchActivity extends Activity {
 	private static final String APIKEY = "1Omry6axtR8CxwPTul52t4Ser";
@@ -48,13 +48,13 @@ public class SearchActivity extends Activity {
 	private static String bearerToken = "";
 
 	private TweetModel model;
-	
+
 	private ListView lvList;
 	private Button btnSearch;
 	private EditText etSearch;
 	private TextView searchHint;
 	private String type;
-	
+
 	private CommonsHttpOAuthConsumer consumer;
 
 	@Override
@@ -62,34 +62,32 @@ public class SearchActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_search);
 		getActionBar().setHomeButtonEnabled(true);
-		
-		//generateOAUTHToken();
 
-		// haal het model op
+		// generateOAUTHToken();
+
+		// Get the model
 		TweetApplication app = (TweetApplication) getBaseContext()
 				.getApplicationContext();
 		model = app.getModel();
-		
+
 		consumer = app.getConsumer();
 
 		// haal de componenten op
 		lvList = (ListView) findViewById(R.id.lvTweet);
 		searchHint = (TextView) findViewById(R.id.tvSearch_Hint);
 		btnSearch = (Button) findViewById(R.id.btnSearch);
-		
+
 		etSearch = (EditText) findViewById(R.id.etSearchText);
-		
+
 		lvList.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
-			public void onItemClick(AdapterView<?> parent,
-					View view, int position, long id) {
+			public void onItemClick(AdapterView<?> parent, View view,
+					int position, long id) {
 				if (type.equals("user")) {
-					Log.d("Clicked on item", "Yeah");
 					seeDetails(position);
 				}
-				
-				
+
 			}
 
 		});
@@ -98,13 +96,14 @@ public class SearchActivity extends Activity {
 			@SuppressWarnings("deprecation")
 			@Override
 			public void onClick(View v) {
-				
+
 				searchHint.setVisibility(View.GONE);
-				if (( etSearch.getText() + "").startsWith("@")) {
-					// zoek op gebruiker
+				if ((etSearch.getText() + "").startsWith("@")) {
+					// search for user 
 					type = "user";
 					Log.d("type", type);
-					UserAdapter userAdapter = new UserAdapter(SearchActivity.this, model.getSearchedUsers());
+					UserAdapter userAdapter = new UserAdapter(
+							SearchActivity.this, model.getSearchedUsers());
 					model.addObserver(userAdapter);
 					lvList.setAdapter(userAdapter);
 					GetUsersTask getUsers = new GetUsersTask();
@@ -114,9 +113,10 @@ public class SearchActivity extends Activity {
 					getUsers.execute(URLEncoder.encode(searchString));
 					Log.d("Search", "button pressed");
 				} else {
-					// zoek naar tweets
-					
-					Tweetadapter tweetAdapter = new Tweetadapter(SearchActivity.this, model.getTweets());
+					// search for tweets
+
+					Tweetadapter tweetAdapter = new Tweetadapter(
+							SearchActivity.this, model.getTweets());
 					model.addObserver(tweetAdapter);
 					lvList.setAdapter(tweetAdapter);
 					GetTweetsTask getTweets = new GetTweetsTask();
@@ -144,8 +144,6 @@ public class SearchActivity extends Activity {
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
-			// als er op de knop wordt gedrukt (op de actionbar) om tweets te
-			// zoeken
 		if (id == android.R.id.home) {
 			finish();
 		}
@@ -153,6 +151,10 @@ public class SearchActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 	
+	/**
+	 * Loads the detailscreen for the person at a specific position in the list
+	 * @param position the position that was clicked on.
+	 */
 	private void seeDetails(int position) {
 		Intent userDetailsIntent = new Intent(this, UserDetailsActivity.class);
 		userDetailsIntent.putExtra("position", position);
@@ -169,6 +171,7 @@ public class SearchActivity extends Activity {
 	 * 
 	 * @throws Exception
 	 */
+	@SuppressWarnings("unused")
 	private void generateOAUTHToken() {
 
 		String authString = APIKEY + ":" + APISECRET;
@@ -181,7 +184,8 @@ public class SearchActivity extends Activity {
 	}
 
 	/**
-	 * Wordt niet meer gebruikt. Er wordt nu gebruik gemaakt van de consumer tokens.
+	 * Wordt niet meer gebruikt. Er wordt nu gebruik gemaakt van de consumer
+	 * tokens.
 	 * 
 	 * Asynctask om de Bearer token aan te vragen(als er nog geen bearer token
 	 * is aangevraagd met die AutenticatieString) Of om de bearer token op te
@@ -208,11 +212,11 @@ public class SearchActivity extends Activity {
 
 				String responseString = new BasicResponseHandler()
 						.handleResponse(response);
-				
+
 				JSONObject jsonO = new JSONObject(responseString);
 				token = jsonO.getString("access_token");
 			} catch (ClientProtocolException cpE) {
-				int statuscode = response.getStatusLine().getStatusCode();
+//				int statuscode = response.getStatusLine().getStatusCode();
 				cpE.printStackTrace();
 			} catch (UnsupportedEncodingException ueE) {
 				// niet van belang om er iets op uit te voeren
@@ -228,11 +232,14 @@ public class SearchActivity extends Activity {
 		@Override
 		protected void onPostExecute(String result) {
 			bearerToken = result;
-			// zet de zoekknop op enabled zodat mensen kunnen gaan zoeken.
+			// Enable search button so that users can search
 			if (!bearerToken.equals("")) {
 				btnSearch.setEnabled(true);
 			} else {
-				Toast.makeText(getBaseContext(), "Something went wrong with connecting to the twitter server", Toast.LENGTH_LONG).show();
+				Toast.makeText(
+						getBaseContext(),
+						"Something went wrong with connecting to the twitter server",
+						Toast.LENGTH_LONG).show();
 			}
 
 			super.onPostExecute(result);
@@ -242,71 +249,67 @@ public class SearchActivity extends Activity {
 
 	/**
 	 * Een asynctask dat de tweets ophaalt met de gevraagde zoekterm. Gebruikt
-	 * hiervoor de user  om bij twitter de zoekterm op te kunnen vragen.
+	 * hiervoor de user om bij twitter de zoekterm op te kunnen vragen.
 	 * 
 	 */
 	public class GetTweetsTask extends AsyncTask<String, Integer, String> {
 		private HttpResponse response;
+
 		@Override
 		protected String doInBackground(String... params) {
 			String searchJSON = "";
 			if (!params[0].equals("")) {
-				
+
 				HttpClient client = new DefaultHttpClient();
 				HttpGet httpGet = new HttpGet(
 						"https://api.twitter.com/1.1/search/tweets.json?q="
 								+ params[0]);
-				
-				
-				
+
 				try {
 					consumer.sign(httpGet);
-					
+
 					ResponseHandler<String> handler = new BasicResponseHandler();
 					response = client.execute(httpGet);
 					searchJSON = handler.handleResponse(response);
 				} catch (ClientProtocolException e) {
-					int statusCode = response.getStatusLine().getStatusCode();
+//					int statusCode = response.getStatusLine().getStatusCode();
 					e.printStackTrace();
 				} catch (IOException e) {
 					searchJSON = "Internet";
-					//e.printStackTrace();
-				} catch (Exception ec){
+					// e.printStackTrace();
+				} catch (Exception ec) {
 					ec.printStackTrace();
 				}
-				
-				
-			} 
-			return searchJSON;
-			
-			
-			
 
-			
+			}
+			return searchJSON;
+
 		}
 
 		@Override
 		protected void onPostExecute(String result) {
 			if (result.equals("")) {
-				Toast.makeText(getBaseContext(), "Not able to search for nothing", Toast.LENGTH_SHORT).show();
+				Toast.makeText(getBaseContext(),
+						"Not able to search for nothing", Toast.LENGTH_SHORT)
+						.show();
 			} else if (result.equals("Internet")) {
 				Log.d("check", "check");
-				Toast.makeText(getBaseContext(), "Cant connect to twitter service, Check your internet connection, and try again later", Toast.LENGTH_LONG).show();
-			} 
-			else {
+				Toast.makeText(
+						getBaseContext(),
+						"Cant connect to twitter service, Check your internet connection, and try again later",
+						Toast.LENGTH_LONG).show();
+			} else {
 				model.handleTweetSearch(result);
 			}
-			
+
 			btnSearch.setEnabled(true);
 			btnSearch.setText("Search");
 			Log.d("search result", result);
 			super.onPostExecute(result);
 		}
-		
-		
 
 	}
-	
+
 	/**
 	 * Een asynctask dat de Users ophaalt met de gevraagde zoekterm. Gebruikt
 	 * hiervoor de user tokens om bij twitter de zoekterm op te kunnen vragen.
@@ -314,55 +317,57 @@ public class SearchActivity extends Activity {
 	 */
 	public class GetUsersTask extends AsyncTask<String, Integer, String> {
 		private HttpResponse response;
+
 		@Override
 		protected String doInBackground(String... params) {
 			String searchJSON = "";
 			if (!params[0].equals("")) {
-				
+
 				HttpClient client = new DefaultHttpClient();
 				HttpGet httpGet = new HttpGet(
 						"https://api.twitter.com/1.1/users/search.json?q="
 								+ params[0]);
 				try {
 					consumer.sign(httpGet);
-					
+
 					ResponseHandler<String> handler = new BasicResponseHandler();
 					response = client.execute(httpGet);
 					searchJSON = handler.handleResponse(response);
 				} catch (ClientProtocolException e) {
-					int statusCode = response.getStatusLine().getStatusCode();
+					//int statusCode = response.getStatusLine().getStatusCode();
 					e.printStackTrace();
 				} catch (IOException e) {
 					searchJSON = "Internet";
-					//e.printStackTrace();
-				} catch (Exception ec){
+					// e.printStackTrace();
+				} catch (Exception ec) {
 					ec.printStackTrace();
 				}
-				
-				
-			} 
+
+			}
 			return searchJSON;
 		}
 
 		@Override
 		protected void onPostExecute(String result) {
 			if (result.equals("")) {
-				Toast.makeText(getBaseContext(), "Not able to search for nothing", Toast.LENGTH_SHORT).show();
+				Toast.makeText(getBaseContext(),
+						"Not able to search for nothing", Toast.LENGTH_SHORT)
+						.show();
 			} else if (result.equals("Internet")) {
 				Log.d("check", "check");
-				Toast.makeText(getBaseContext(), "Cant connect to twitter service, Check your internet connection, and try again later", Toast.LENGTH_LONG).show();
-			} 
-			else {
+				Toast.makeText(
+						getBaseContext(),
+						"Cant connect to twitter service, Check your internet connection, and try again later",
+						Toast.LENGTH_LONG).show();
+			} else {
 				model.handleUserSearch(result);
 			}
-			
+
 			btnSearch.setEnabled(true);
 			btnSearch.setText("Search");
 			Log.d("search result", result);
 			super.onPostExecute(result);
 		}
-		
-		
 
 	}
 

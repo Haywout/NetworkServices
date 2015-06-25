@@ -99,6 +99,8 @@ public final class R {
         public static final int add_tweet=0x7f050003;
         public static final int app_name=0x7f050000;
         public static final int create_tweet=0x7f05000b;
+        public static final int desc=0x7f050016;
+        public static final int follow=0x7f050015;
         public static final int followers_text=0x7f050010;
         public static final int following_text=0x7f05000f;
         public static final int hello_world=0x7f050001;

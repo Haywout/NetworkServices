@@ -1,21 +1,18 @@
-package com.example.networkservices;
+package com.example.networkservices.activities;
 
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
 import oauth.signpost.commonshttp.CommonsHttpOAuthProvider;
-import oauth.signpost.exception.OAuthCommunicationException;
-import oauth.signpost.exception.OAuthExpectationFailedException;
-import oauth.signpost.exception.OAuthMessageSignerException;
-import oauth.signpost.exception.OAuthNotAuthorizedException;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import com.example.networkservices.R;
+import com.example.networkservices.TweetApplication;
 
 public class LoginActivity extends Activity {
 	private CommonsHttpOAuthProvider provider;
@@ -39,6 +36,9 @@ public class LoginActivity extends Activity {
 
 		Log.d("TokensPref", tempToken + " + " + tempTokenSecret);
 
+		// als er geen tokens opgeslagen zijn. Haal dan tokens op van twitter.
+		// als er wel tokens opgeslagen zijn. Ga dan verder naar de
+		// mainactivity.
 		if (tempToken == null || tempTokenSecret == null) {
 			webview = (WebView) findViewById(R.id.webView1);
 
@@ -72,6 +72,12 @@ public class LoginActivity extends Activity {
 		finish();
 	}
 
+	/**
+	 * Retrieves the request token, where the user can login.
+	 * 
+	 * @author Casper
+	 * 
+	 */
 	private class RetrieveRequestTokenTask extends
 			AsyncTask<String, Void, String> {
 
@@ -99,6 +105,13 @@ public class LoginActivity extends Activity {
 		}
 	}
 
+	/**
+	 * Retrieves the accesstoken, which can be used for creating the consumer
+	 * object later.
+	 * 
+	 * @author Casper
+	 * 
+	 */
 	private class RetrieveAccessTokenTask extends
 			AsyncTask<String, Void, String> {
 
@@ -128,6 +141,13 @@ public class LoginActivity extends Activity {
 
 	}
 
+	/**
+	 * Saves the tokens in a shared preference, so that on restart the tokens
+	 * can be pulled out of it
+	 * 
+	 * @param token
+	 * @param tokenSecret
+	 */
 	private void rememberCredents(String token, String tokenSecret) {
 		SharedPreferences settings = getSharedPreferences(TOKENS, 0);
 		SharedPreferences.Editor editor = settings.edit();
